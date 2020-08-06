@@ -1,1 +1,2 @@
-.DS_Modules
+node_modules/
+.DS_Store
