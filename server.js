@@ -25,6 +25,77 @@ app.get('/', (req, res) => {
     });
 });
 
+// Get all candidates
+app.get('/api/candidates', (req, res) => {
+    const sql = `SELECT * FROM candidates`;
+    const params = [];
+    // the db object is using the all() method. 
+    // This method runs the SQL query and executes the callback 
+    // with all the resulting rows that match the query.
+    db.all(sql, params, (err, rows) => {
+        if (err) {
+            // 500 status code means there was a server error—different than a 404, 
+            // which indicates a user request error.
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({
+            message: 'success',
+            data: rows
+        });
+    });
+});
+
+// Get single candidate
+app.get('/api/candidate/:id', (req, res) => {
+    const sql = `SELECT * FROM candidates 
+                 WHERE id = ?`;
+    const params = [req.params.id];
+    db.get(sql, params, (err, row) => {
+      if (err) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+  
+      res.json({
+        message: 'success',
+        data: row
+      });
+    });
+});
+
+// Delete a candidate
+app.delete('/api/candidate/:id', (req, res) => {
+    const sql = `DELETE FROM candidates WHERE id = ?`;
+    const params = [req.params.id];
+    db.run(sql, params, function(err, result) {
+      if (err) {
+        res.status(400).json({ error: res.message });
+        return;
+      }
+  
+      res.json({
+        message: 'successfully deleted',
+        changes: this.changes
+      });
+    });
+});
+
+
+// Create a candidate
+const sql = `INSERT INTO candidates (id, first_name, last_name, industry_connected) 
+              VALUES (?,?,?,?)`;
+const params = [1, 'Ronald', 'Firbank', 1];
+// ES5 function, not arrow function, to use this
+db.run(sql, params, function(err, result) {
+  if (err) {
+    console.log(err);
+  }
+  // .run methods do not return data, therefore console.log(results) will be undefined
+  console.log(result, this.lastID);
+});
+
+
 // Default response for any other request(Not Found) Catch all
 // this below needs to be the last route, right above the app.listen
 app.use((req, res) => {
